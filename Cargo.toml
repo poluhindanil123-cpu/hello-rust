@@ -1,0 +1,11 @@
+[package]
+name = "hello-rust"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+
+[profile.release]
+opt-level = "z"     # оптимизация под размер
+lto = true          # link-time optimization
+strip = true        # убрать отладочные символы
