@@ -1,10 +1,18 @@
-###  CI/CD на Rust с публикацией в GHCR
+# CI/CD на Rust с публикацией в GHCR
 
+Готовый шаблон проекта на Rust с настроенным CI/CD через GitHub Actions и автоматической публикацией Docker-образа в GitHub Container Registry (GHCR).
 
-## Создайте на вашем компьютере, в корневом каталоге текущего пользователя такую структуру:
-пользователя такую структуру:
+---
+
+## 📁 Структура проекта
+
+Создайте в корневом каталоге текущего пользователя следующую структуру:
+
+```
 hello-rust/
-├── .github/workflows/ci.yml
+├── .github/
+│   └── workflows/
+│       └── ci.yml
 ├── src/
 │   ├── main.rs
 │   └── lib.rs
@@ -14,12 +22,16 @@ hello-rust/
 ├── .dockerignore
 ├── Dockerfile
 └── Cargo.toml
+```
 
-Для перехода в корень текущего пользователя:
+---
 
+## 🚀 Быстрое создание (Git Bash / Linux / WSL / macOS)
+
+Перейдите в корень текущего пользователя и выполните одну команду:
+
+```bash
 cd ~
-
-Создать структуру проекта одной bash-командой (Git Bash / Linux / WSL / macOS):
 
 mkdir -p hello-rust/{.github/workflows,src,tests} && \
 cd hello-rust && \
@@ -97,8 +109,13 @@ fn integration_test_sum_large() {
     assert_eq!(sum_range(1, 100), 5050);
 }
 EOF
+```
 
-cat > Dockerfile << 'EOF'
+---
+
+## 🐳 Dockerfile (multi-stage сборка)
+
+```dockerfile
 # Этап 1: сборка
 FROM rust:1-slim AS builder
 WORKDIR /build
@@ -128,9 +145,13 @@ COPY --from=builder /build/target/release/hello-rust ./hello-rust
 USER appuser
 
 ENTRYPOINT ["./hello-rust"]
-EOF
+```
 
-cat > .github/workflows/ci.yml << 'EOF'
+---
+
+## ⚙️ GitHub Actions (`.github/workflows/ci.yml`)
+
+```yaml
 name: Rust CI/CD
 
 on:
@@ -204,21 +225,79 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-EOF
+```
 
-cat > .gitignore << 'EOF'
+---
+
+## 🚫 Игнорируемые файлы
+
+**`.gitignore`**
+
+```gitignore
 /target
-EOF
+```
 
-cat > .dockerignore << 'EOF'
+**`.dockerignore`**
+
+```dockerignore
 target/
 .git/
 .github/
 *.md
 .gitignore
 .dockerignore
-EOF
+```
 
+---
+
+## ✅ Проверка результата
+
+После выполнения скрипта вы должны увидеть список созданных файлов:
+
+```bash
 echo "✅ Структура создана:"
 find . -type f | sort
+```
 
+Ожидаемый вывод:
+
+```
+./.dockerignore
+./.github/workflows/ci.yml
+./.gitignore
+./Cargo.toml
+./Dockerfile
+./src/lib.rs
+./src/main.rs
+./tests/integration.rs
+```
+
+---
+
+## 📝 Что делает CI/CD
+
+| Шаг | Действие |
+|-----|----------|
+| `Format check` | Проверка форматирования через `rustfmt` |
+| `Lint with Clippy` | Статический анализ, предупреждения как ошибки |
+| `Run tests` | Юнит- и интеграционные тесты |
+| `Build release` | Сборка релизного бинарника |
+| `Log in to GHCR` | Авторизация в GitHub Container Registry |
+| `Build and push` | Сборка Docker-образа и пуш в GHCR (только для `main`) |
+
+Образ будет доступен по адресу:
+
+```
+ghcr.io/<ваш-username>/hello-rust:latest
+ghcr.io/<ваш-username>/hello-rust:<short-sha>
+```
+
+---
+
+## 🔑 Требования
+
+1. Репозиторий создан на GitHub.
+2. Ветка называется `main`.
+3. В настройках репозитория разрешена запись пакетов:  
+   **Settings → Actions → General → Workflow permissions → Read and write permissions**.
+4. Для приватных образов — при необходимости настроить видимость пакета в GHCR.
